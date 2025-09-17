@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Troubleshooting Logsheet</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-tools"></i> IT Troubleshooting Logsheet</h1>
+            <p>ระบบติดตามและจัดการปัญหาทางเทคนิค</p>
+            <div class="user-info" id="userInfo" style="display: none;">
+                <span id="userName"></span>
+                <span id="userRole" class="role-badge"></span>
+                <button id="logoutBtn" class="btn btn-sm btn-secondary">
+                    <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+                </button>
+            </div>
+        </header>
+
+        <div class="controls">
+            <button id="newCaseBtn" class="btn btn-primary">
+                <i class="fas fa-plus"></i> สร้างเคสใหม่
+            </button>
+            <button id="refreshBtn" class="btn btn-secondary">
+                <i class="fas fa-sync-alt"></i> รีเฟรช
+            </button>
+            <button id="adminPanelBtn" class="btn btn-warning" style="display: none;">
+                <i class="fas fa-cog"></i> จัดการระบบ
+            </button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalCases">0</div>
+                <div class="stat-label">เคสทั้งหมด</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="openCases">0</div>
+                <div class="stat-label">เคสเปิด</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="overdueCases">0</div>
+                <div class="stat-label">เกินกำหนด</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="resolvedCases">0</div>
+                <div class="stat-label">แก้ไขแล้ว</div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="cases-table">
+                <thead>
+                    <tr>
+                        <th>หัวข้อเคส</th>
+                        <th>ความรุนแรง</th>
+                        <th>สถานะ</th>
+                        <th>ผู้แจ้ง</th>
+                        <th>วันที่สร้าง</th>
+                        <th>ครบกำหนด</th>
+                        <th>สถานะ SLA</th>
+                        <th>การดำเนินการ</th>
+                        <th id="adminActionsHeader" style="display: none;">Admin</th>
+                    </tr>
+                </thead>
+                <tbody id="casesTableBody">
+                    <!-- ข้อมูลจะถูกโหลดจาก JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal สำหรับสร้างเคสใหม่ -->
+    <div id="newCaseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-plus-circle"></i> สร้างเคสใหม่</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="newCaseForm">
+                <div class="form-group">
+                    <label for="caseTitle">ชื่องาน *</label>
+                    <input type="text" id="caseTitle" name="caseTitle" required 
+                           placeholder="เช่น ปริ้นเตอร์ไม่ออก, เข้า WiFi ไม่ได้">
+                </div>
+                
+                <div class="form-group">
+                    <label for="problemDescription">รายละเอียดปัญหา *</label>
+                    <textarea id="problemDescription" name="problemDescription" required 
+                              rows="4" placeholder="อธิบายปัญหาอย่างละเอียด"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="reportedBy">ผู้แจ้ง</label>
+                    <input type="text" id="reportedBy" name="reportedBy" readonly 
+                           placeholder="จะถูกกำหนดอัตโนมัติ">
+                </div>
+                
+                <div class="info-box">
+                    <i class="fas fa-info-circle"></i>
+                    <span>ระดับความรุนแรงจะถูกกำหนดโดยผู้ดูแลระบบหลังจากส่งเคสแล้ว</span>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelNewCase">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary">สร้างเคส</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal สำหรับแก้ไขเคส -->
+    <div id="editCaseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-edit"></i> แก้ไขเคส</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="editCaseForm">
+                <input type="hidden" id="editCaseId">
+                
+                <div class="form-group">
+                    <label for="editCaseTitle">ชื่องาน</label>
+                    <input type="text" id="editCaseTitle" name="caseTitle" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editProblemDescription">รายละเอียดปัญหา</label>
+                    <textarea id="editProblemDescription" name="problemDescription" readonly rows="3"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editReportedBy">ผู้แจ้ง</label>
+                    <input type="text" id="editReportedBy" name="reportedBy" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editSeverity">ระดับความรุนแรง</label>
+                    <input type="text" id="editSeverity" name="severity" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editStatus">สถานะ *</label>
+                    <select id="editStatus" name="status" required>
+                        <option value="Open">Open</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Resolved">Resolved</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editSolutionDetails">วิธีแก้ปัญหา</label>
+                    <textarea id="editSolutionDetails" name="solutionDetails" 
+                              rows="4" placeholder="อธิบายวิธีแก้ไขปัญหา"></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelEditCase">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary">บันทึกการเปลี่ยนแปลง</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal สำหรับดูรายละเอียดเคส -->
+    <div id="viewCaseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-eye"></i> รายละเอียดเคส</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div id="caseDetails">
+                <!-- รายละเอียดจะถูกโหลดจาก JavaScript -->
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" id="closeViewCase">ปิด</button>
+                <button type="button" class="btn btn-primary" id="editFromView">แก้ไขเคส</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal สำหรับ Admin Panel -->
+    <div id="adminModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2><i class="fas fa-cog"></i> จัดการระบบ</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="admin-tabs">
+                <button class="tab-btn active" data-tab="users">จัดการผู้ใช้</button>
+                <button class="tab-btn" data-tab="settings">การตั้งค่า</button>
+            </div>
+            
+            <!-- Tab จัดการผู้ใช้ -->
+            <div id="usersTab" class="tab-content active">
+                <div class="admin-section">
+                    <h3><i class="fas fa-users"></i> รายชื่อผู้ใช้</h3>
+                    <div class="table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>ชื่อผู้ใช้</th>
+                                    <th>ชื่อเต็ม</th>
+                                    <th>สิทธิ์</th>
+                                    <th>วันที่สร้าง</th>
+                                    <th>การดำเนินการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <!-- ข้อมูลจะถูกโหลดจาก JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="admin-section">
+                    <h3><i class="fas fa-user-plus"></i> เพิ่มผู้ใช้ใหม่</h3>
+                    <form id="newUserForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="newUsername">ชื่อผู้ใช้</label>
+                                <input type="text" id="newUsername" name="username" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="newPassword">รหัสผ่าน</label>
+                                <input type="password" id="newPassword" name="password" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="newFullName">ชื่อเต็ม</label>
+                                <input type="text" id="newFullName" name="full_name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="newRole">สิทธิ์</label>
+                                <select id="newRole" name="role" required>
+                                    <option value="user">ผู้ใช้ทั่วไป</option>
+                                    <option value="admin">ผู้ดูแลระบบ</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> เพิ่มผู้ใช้
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Tab การตั้งค่า -->
+            <div id="settingsTab" class="tab-content">
+                <div class="admin-section">
+                    <h3><i class="fas fa-cogs"></i> การตั้งค่าระบบ</h3>
+                    <div class="settings-grid">
+                        <div class="setting-item">
+                            <h4>ระดับความรุนแรง</h4>
+                            <div class="severity-settings">
+                                <div class="severity-item">
+                                    <span class="severity-badge severity-critical">Critical</span>
+                                    <span>1 วัน</span>
+                                </div>
+                                <div class="severity-item">
+                                    <span class="severity-badge severity-major">Major</span>
+                                    <span>3 วัน</span>
+                                </div>
+                                <div class="severity-item">
+                                    <span class="severity-badge severity-minor">Minor</span>
+                                    <span>7 วัน</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal สำหรับ Admin กำหนดระดับความรุนแรง -->
+    <div id="assignSeverityModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-exclamation-triangle"></i> กำหนดระดับความรุนแรง</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="assignSeverityForm">
+                <input type="hidden" id="assignSeverityCaseId">
+                
+                <div class="form-group">
+                    <label for="assignSeverityTitle">หัวข้อเคส</label>
+                    <input type="text" id="assignSeverityTitle" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label for="assignSeverityDescription">รายละเอียดปัญหา</label>
+                    <textarea id="assignSeverityDescription" readonly rows="3"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="assignSeverity">ระดับความรุนแรง *</label>
+                    <select id="assignSeverity" name="severity" required>
+                        <option value="">เลือกระดับความรุนแรง</option>
+                        <option value="Critical">Critical (1 วัน)</option>
+                        <option value="Major">Major (3 วัน)</option>
+                        <option value="Minor">Minor (7 วัน)</option>
+                    </select>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelAssignSeverity">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary">กำหนดระดับความรุนแรง</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เข้าสู่ระบบ - IT Troubleshooting Logsheet</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        
+        .login-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            animation: slideUp 0.6s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .login-header h1 {
+            color: #333;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+        
+        .login-header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .login-form {
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .demo-accounts {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .demo-accounts h3 {
+            color: #333;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .demo-account {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e1e5e9;
+        }
+        
+        .demo-account:last-child {
+            border-bottom: none;
+        }
+        
+        .demo-account-info {
+            flex: 1;
+        }
+        
+        .demo-account-role {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .demo-account-btn {
+            padding: 4px 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .demo-account-btn:hover {
+            background: #5a6fd8;
+        }
+        
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c62828;
+            display: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            color: #666;
+        }
+        
+        .loading i {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h1><i class="fas fa-shield-alt"></i> เข้าสู่ระบบ</h1>
+                <p>IT Troubleshooting Logsheet</p>
+            </div>
+            
+            <div class="error-message" id="errorMessage">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span id="errorText"></span>
+            </div>
+            
+            <form class="login-form" id="loginForm">
+                <div class="form-group">
+                    <label for="username">ชื่อผู้ใช้</label>
+                    <input type="text" id="username" name="username" required 
+                           placeholder="กรอกชื่อผู้ใช้">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">รหัสผ่าน</label>
+                    <input type="password" id="password" name="password" required 
+                           placeholder="กรอกรหัสผ่าน">
+                </div>
+                
+                <button type="submit" class="login-btn" id="loginBtn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    เข้าสู่ระบบ
+                </button>
+            </form>
+            
+            <div class="loading" id="loading">
+                <i class="fas fa-spinner"></i>
+                <br>กำลังเข้าสู่ระบบ...
+            </div>
+            
+            <div class="demo-accounts">
+                <h3><i class="fas fa-info-circle"></i> บัญชีทดสอบ</h3>
+                
+                <div class="demo-account">
+                    <div class="demo-account-info">
+                        <strong>admin</strong>
+                        <div class="demo-account-role">ผู้ดูแลระบบ</div>
+                    </div>
+                    <button class="demo-account-btn" onclick="fillDemoAccount('admin', 'admin123')">
+                        ใช้บัญชีนี้
+                    </button>
+                </div>
+                
+                <div class="demo-account">
+                    <div class="demo-account-info">
+                        <strong>user1</strong>
+                        <div class="demo-account-role">ผู้ใช้ทั่วไป</div>
+                    </div>
+                    <button class="demo-account-btn" onclick="fillDemoAccount('user1', 'user123')">
+                        ใช้บัญชีนี้
+                    </button>
+                </div>
+                
+                <div class="demo-account">
+                    <div class="demo-account-info">
+                        <strong>user2</strong>
+                        <div class="demo-account-role">ผู้ใช้ทั่วไป</div>
+                    </div>
+                    <button class="demo-account-btn" onclick="fillDemoAccount('user2', 'user123')">
+                        ใช้บัญชีนี้
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const loginForm = document.getElementById('loginForm');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        const loading = document.getElementById('loading');
+        const loginBtn = document.getElementById('loginBtn');
+        
+        // ฟังก์ชันแสดงข้อผิดพลาด
+        function showError(message) {
+            errorText.textContent = message;
+            errorMessage.style.display = 'block';
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
+        
+        // ฟังก์ชันกรอกข้อมูลบัญชีทดสอบ
+        function fillDemoAccount(username, password) {
+            document.getElementById('username').value = username;
+            document.getElementById('password').value = password;
+        }
+        
+        // จัดการการส่งฟอร์ม
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(loginForm);
+            const username = formData.get('username');
+            const password = formData.get('password');
+            
+            if (!username || !password) {
+                showError('กรุณากรอกชื่อผู้ใช้และรหัสผ่าน');
+                return;
+            }
+            
+            // แสดง loading
+            loginBtn.style.display = 'none';
+            loading.style.display = 'block';
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
+                }
+                
+                // บันทึก token และข้อมูลผู้ใช้
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                
+                // เปลี่ยนหน้าไปยังหน้าหลัก
+                window.location.href = '/';
+                
+            } catch (error) {
+                console.error('Login error:', error);
+                showError(error.message);
+            } finally {
+                // ซ่อน loading
+                loginBtn.style.display = 'flex';
+                loading.style.display = 'none';
+            }
+        });
+        
+        // ตรวจสอบว่าล็อกอินอยู่แล้วหรือไม่
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                // ตรวจสอบ token ว่ายังใช้ได้หรือไม่
+                fetch('/api/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Token ยังใช้ได้ ไปหน้าหลัก
+                        window.location.href = '/';
+                    } else {
+                        // Token หมดอายุ ลบออก
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                    }
+                })
+                .catch(() => {
+                    // เกิดข้อผิดพลาด ลบ token
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
